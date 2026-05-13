@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio ÑÑÑ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0e0e0e;--panel:#161616;--panel2:#1c1c1c;--border:#2a2a2a;
+  --accent:#ff4d00;--text:#e8e8e8;--muted:#888;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+header{display:flex;align-items:center;height:38px;background:var(--panel);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;flex-shrink:0;}
+.logo{padding:0 16px;font-weight:600;font-size:12px;letter-spacing:2px;color:var(--accent);border-right:1px solid var(--border);height:100%;display:flex;align-items:center;}
+.hitem{padding:0 14px;height:100%;display:flex;align-items:center;gap:8px;border-right:1px solid var(--border);color:var(--muted);font-size:10px;letter-spacing:1px;}
+.hitem span{color:var(--text)}
+.hbadge{background:var(--accent);color:#fff;font-size:9px;padding:2px 6px;border-radius:2px;font-weight:600;letter-spacing:1px;}
+.main{display:flex;flex:1;overflow:hidden}
+aside{width:220px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;}
+aside::-webkit-scrollbar{width:3px}
+aside::-webkit-scrollbar-thumb{background:var(--border)}
+.sec-title{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);padding:12px 14px 6px;text-transform:uppercase;}
+.tool-btn{display:flex;align-items:center;gap:8px;padding:7px 14px;font-family:var(--mono);font-size:10px;letter-spacing:1px;cursor:pointer;color:var(--muted);transition:all .15s;border:none;background:none;width:100%;text-align:left;}
+.tool-btn:hover{background:var(--panel2);color:var(--text)}
+.tool-btn.active{background:rgba(255,77,0,.12);color:var(--accent);border-left:2px solid var(--accent)}
+.tool-btn .icon{width:14px;height:14px;opacity:.6}
+.tool-btn.active .icon{opacity:1}
+.divider{height:1px;background:var(--border);margin:6px 0}
+.slider-row{display:flex;align-items:center;gap:6px;padding:4px 14px;font-family:var(--mono);font-size:9px;}
+.slider-row label{color:var(--muted);width:72px;letter-spacing:.5px;font-size:9px;flex-shrink:0}
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;height:2px;background:var(--border);outline:none;border-radius:1px;cursor:pointer;}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--accent);cursor:pointer;}
+.slider-row .val{color:var(--text);width:30px;text-align:right;font-size:9px}
+.upload-zone{margin:10px 14px;border:1px dashed var(--border);border-radius:3px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;font-family:var(--mono);font-size:9px;color:var(--muted);}
+.upload-zone:hover{border-color:var(--accent);color:var(--accent);background:rgba(255,77,0,.04)}
+.upload-zone input{display:none}
+.upload-zone .up-icon{font-size:18px;margin-bottom:4px;display:block}
+.img-preview{margin:6px 14px;border-radius:3px;overflow:hidden;border:1px solid var(--border);position:relative;}
+.img-preview img{width:100%;display:block;height:80px;object-fit:cover}
+.img-preview .rm{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);border:none;color:#fff;font-size:9px;padding:2px 5px;cursor:pointer;border-radius:2px;font-family:var(--mono);}
+.action-btn{margin:4px 14px;padding:6px 10px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:9px;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:all .15s;text-transform:uppercase;width:calc(100% - 28px);}
+.action-btn:hover{border-color:var(--accent);color:var(--accent)}
+.action-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.action-btn.primary:hover{background:#e04400}
+
+#wow-btn{
+  margin:8px 14px 4px;padding:9px 10px;
+  background:#0d1117;border:1px solid #30a3ff55;
+  color:#58b4ff;font-family:var(--mono);font-size:10px;
+  letter-spacing:2px;cursor:pointer;border-radius:3px;
+  transition:all .25s;text-transform:uppercase;
+  width:calc(100% - 28px);display:flex;align-items:center;gap:8px;
+}
+#wow-btn:hover{border-color:#58b4ff;box-shadow:0 0 10px #30a3ff33;}
+#wow-btn.active{background:#071e36;border-color:#58b4ff;color:#a8d8ff;box-shadow:0 0 14px #30a3ff44;}
+#wow-btn .wdot{width:7px;height:7px;border-radius:50%;background:#30a3ff;flex-shrink:0;}
+#wow-btn.active .wdot{background:#58b4ff;box-shadow:0 0 6px #58b4ff;animation:blink .9s infinite alternate;}
+@keyframes blink{from{opacity:1}to{opacity:.2}}
+
+#canvas-wrap{flex:1;position:relative;background:#111;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+#canvas-wrap canvas{display:block}
+#grid-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+#canvas-wrap canvas:not(#grid-canvas):not(#hand-overlay){position:relative;z-index:1;}
+#hand-overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:4;}
+
+#cam-box{position:absolute;bottom:14px;right:14px;width:168px;height:120px;border:1px solid #2a2a2a;border-radius:4px;overflow:hidden;background:#000;z-index:10;display:none;}
+#cam-box.on{display:block;}
+#cam-video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
+#cam-label{position:absolute;top:5px;left:7px;font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.4);letter-spacing:1px;}
+
+#hand-legend{display:none;align-items:center;gap:14px;font-family:var(--mono);font-size:9px;}
+#hand-legend.on{display:flex;}
+.hleg{display:flex;align-items:center;gap:4px;}
+.hleg-dot{width:7px;height:7px;border-radius:50%;}
+
+.statusbar{height:28px;background:var(--panel);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:24px;font-family:var(--mono);font-size:9px;color:var(--muted);flex-shrink:0;}
+.statusbar span{color:var(--text)}
+.sdot{width:6px;height:6px;border-radius:50%;background:#3a3a3a;display:inline-block;margin-right:5px}
+.sdot.on{background:var(--accent)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo">STUDIO ÑÑÑ</div>
+    <div class="hitem">PHYSICS <span>VERLET</span></div>
+    <div class="hitem">NODES <span id="hd-nodes">0</span></div>
+    <div class="hitem">EDGES <span id="hd-edges">0</span></div>
+    <div class="hitem">FPS <span id="hd-fps">0</span></div>
+    <div class="hitem" id="hand-legend">
+      <div class="hleg"><div class="hleg-dot" style="background:#22c55e"></div><span style="color:#22c55e">IZQ=CUT</span></div>
+      <div class="hleg"><div class="hleg-dot" style="background:#3b82f6"></div><span style="color:#3b82f6">DER=GRAB</span></div>
+    </div>
+    <div class="hitem" style="margin-left:auto;border-left:1px solid var(--border);border-right:none"><span class="hbadge">LIVE</span></div>
+  </header>
+
+  <div class="main">
+    <aside>
+      <div class="sec-title">Hands</div>
+      <button id="wow-btn">
+        <span class="wdot"></span>WOW
+      </button>
+
+      <div class="divider"></div>
+      <div class="sec-title">Interaction</div>
+      <button class="tool-btn active" data-tool="grab">
+        <svg class="icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M7 1v6M4 3.5v3M10 3.5v3M2 6.5v3.5a3 3 0 006 0V6.5"/></svg>GRAB
+      </button>
+      <button class="tool-btn" data-tool="wind">
+        <svg class="icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 5h8a2 2 0 000-4M1 9h10a2 2 0 010 4H9"/></svg>WIND
+      </button>
+      <button class="tool-btn" data-tool="cut">
+        <svg class="icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="3" cy="3" r="1.5"/><circle cx="3" cy="11" r="1.5"/><path d="M4.2 4.2L10 10M4.2 9.8L10 4"/></svg>CUT
+      </button>
+
+      <div class="divider"></div>
+      <div class="sec-title">Physics</div>
+      <div class="slider-row"><label>GRAVITY</label><input type="range" min="0" max="5" step="0.1" value="1" id="sl-gravity"><span class="val" id="vl-gravity">1.0</span></div>
+      <div class="slider-row"><label>DAMPING</label><input type="range" min="0.9" max="1" step="0.001" value="0.98" id="sl-damping"><span class="val" id="vl-damping">0.98</span></div>
+      <div class="slider-row"><label>SUBSTEPS</label><input type="range" min="1" max="8" step="1" value="3" id="sl-substeps"><span class="val" id="vl-substeps">3</span></div>
+      <div class="slider-row"><label>GRID</label><input type="range" min="10" max="60" step="5" value="30" id="sl-grid"><span class="val" id="vl-grid">30</span></div>
+      <div class="slider-row"><label>WIND X</label><input type="range" min="-3" max="3" step="0.1" value="0" id="sl-windx"><span class="val" id="vl-windx">0.0</span></div>
+      <div class="slider-row"><label>WIND Y</label><input type="range" min="-3" max="3" step="0.1" value="0" id="sl-windy"><span class="val" id="vl-windy">0.0</span></div>
+
+      <div class="divider"></div>
+      <div class="sec-title">Texture</div>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="file-in" accept="image/*">
+        <span class="up-icon">⊕</span>LOAD IMAGE
+      </div>
+      <div id="preview-wrap" style="display:none">
+        <div class="img-preview">
+          <img id="preview-img" src="" alt="">
+          <button class="rm" id="rm-btn">✕</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec-title">Cloth</div>
+      <button class="action-btn primary" id="btn-reset">↺ RESET</button>
+      <button class="action-btn" id="btn-pause">⏸ PAUSE</button>
+      <button class="action-btn" id="btn-drop">⊠ DROP PINS</button>
+      <button class="action-btn" id="btn-repin">⊞ REPIN TOP</button>
+    </aside>
+
+    <div id="canvas-wrap">
+      <canvas id="grid-canvas"></canvas>
+      <canvas id="hand-overlay"></canvas>
+      <div id="cam-box">
+        <video id="cam-video" autoplay muted playsinline></video>
+        <div id="cam-label">CAM · LIVE</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div><span class="sdot on"></span>RUNNING</div>
+    <div>TOOL <span id="st-tool">GRAB</span></div>
+    <div>MOUSE <span id="st-mouse">—</span></div>
+    <div>GRABBED <span id="st-grabbed">NONE</span></div>
+    <div>HANDS <span id="st-hands">OFF</span></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
+
+<script>
+// ── globals ──────────────────────────────────────────────────────────────────
+let simParams = {gravity:1, damping:0.98, substeps:3, grid:30, windx:0, windy:0};
+let currentTool = 'grab';
+let paused = false;
+let handActive = false;
+let mpHands = null, mpCam = null;
+
+window._handState = {
+  left:  {x:null, y:null, pinch:false, lms:null},
+  right: {x:null, y:null, pinch:false, lms:null}
+};
+window._pendingTexture = null;
+
+// ── GRID background ──────────────────────────────────────────────────────────
+(function(){
+  const gc = document.getElementById('grid-canvas');
+  function draw(){
+    const w = gc.offsetWidth, h = gc.offsetHeight;
+    gc.width = w; gc.height = h;
+    const ctx = gc.getContext('2d');
+    ctx.strokeStyle = 'rgba(255,255,255,0.042)'; ctx.lineWidth = 0.5;
+    for(let x=0;x<w;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+    for(let y=0;y<h;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+  }
+  draw();
+  window.addEventListener('resize', draw);
+})();
+
+// ── UI wiring (all via addEventListener to avoid sandbox scope issues) ────────
+document.addEventListener('DOMContentLoaded', function() {
+
+  // Tool buttons
+  document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const t = this.dataset.tool;
+      currentTool = t;
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById('st-tool').textContent = t.toUpperCase();
+      if(window._p5sim) window._p5sim._tool = t;
+    });
+  });
+
+  // Sliders
+  const sliderMap = {
+    'sl-gravity':  'gravity',
+    'sl-damping':  'damping',
+    'sl-substeps': 'substeps',
+    'sl-grid':     'grid',
+    'sl-windx':    'windx',
+    'sl-windy':    'windy'
+  };
+  Object.entries(sliderMap).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', function() {
+      const v = parseFloat(this.value);
+      simParams[key] = v;
+      document.getElementById('vl-' + key).textContent = v.toFixed(key === 'damping' ? 2 : 1);
+      if(window._p5sim) window._p5sim._params = simParams;
+    });
+  });
+
+  // Action buttons
+  document.getElementById('btn-reset').addEventListener('click', function() {
+    if(window._p5sim) window._p5sim._reset = true;
+  });
+
+  document.getElementById('btn-pause').addEventListener('click', function() {
+    paused = !paused;
+    if(window._p5sim) window._p5sim._paused = paused;
+    this.textContent = paused ? '▶ RESUME' : '⏸ PAUSE';
+  });
+
+  document.getElementById('btn-drop').addEventListener('click', function() {
+    if(window._p5sim) window._p5sim._dropAll = true;
+  });
+
+  document.getElementById('btn-repin').addEventListener('click', function() {
+    if(window._p5sim) window._p5sim._repin = true;
+  });
+
+  // WOW (hand tracking) button
+  document.getElementById('wow-btn').addEventListener('click', function() {
+    if(!handActive) startHands();
+    else stopHands();
+  });
+
+  // Upload zone click → trigger file input
+  document.getElementById('upload-zone').addEventListener('click', function() {
+    document.getElementById('file-in').click();
+  });
+
+  // File input change → load texture
+  document.getElementById('file-in').addEventListener('change', function(e) {
+    const f = e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const dataUrl = ev.target.result;
+      document.getElementById('preview-img').src = dataUrl;
+      document.getElementById('preview-wrap').style.display = 'block';
+      const ni = new Image();
+      ni.onload = () => {
+        // Wait for p5 to be ready
+        const tryApply = () => {
+          if(!window._p5sim) { setTimeout(tryApply, 100); return; }
+          const p = window._p5sim;
+          const g = p.createGraphics(ni.width, ni.height);
+          g.drawingContext.drawImage(ni, 0, 0);
+          window._pendingTexture = g;
+        };
+        tryApply();
+      };
+      ni.src = dataUrl;
+    };
+    reader.readAsDataURL(f);
+    // Reset input so same file can be reloaded
+    this.value = '';
+  });
+
+  // Remove texture button
+  document.getElementById('rm-btn').addEventListener('click', function() {
+    document.getElementById('preview-wrap').style.display = 'none';
+    document.getElementById('preview-img').src = '';
+    window._pendingTexture = '__default__';
+  });
+});
+
+// ── HAND TRACKING ─────────────────────────────────────────────────────────────
+async function startHands() {
+  const btn = document.getElementById('wow-btn');
+  btn.innerHTML = '<span class="wdot"></span>LOADING...';
+  btn.disabled = true;
+
+  // Check if running in a sandboxed iframe (Claude artifact viewer)
+  try {
+    if(window.self !== window.top) {
+      btn.innerHTML = '<span class="wdot"></span>WOW';
+      btn.disabled = false;
+      alert('⚠️ Cámara bloqueada por el iframe de Claude.\n\nPara usar el tracking de manos:\n1. Descarga este archivo HTML\n2. Ábrelo directamente en Chrome/Firefox\n3. El botón WOW funcionará correctamente.');
+      return;
+    }
+  } catch(e) {
+    // cross-origin check failed = definitely in iframe
+    btn.innerHTML = '<span class="wdot"></span>WOW';
+    btn.disabled = false;
+    alert('⚠️ Cámara bloqueada por el iframe de Claude.\n\nDescarga el archivo HTML y ábrelo directamente en tu navegador.');
+    return;
+  }
+
+  // Check MediaPipe loaded
+  if(typeof Hands === 'undefined' || typeof Camera === 'undefined') {
+    btn.innerHTML = '<span class="wdot"></span>WOW';
+    btn.disabled = false;
+    alert('Error: MediaPipe no cargó. Verifica tu conexión a internet.');
+    return;
+  }
+
+  try {
+    const video = document.getElementById('cam-video');
+    const stream = await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'}});
+    video.srcObject = stream;
+    await new Promise(r => { video.onloadedmetadata = r; });
+    await video.play();
+
+    mpHands = new Hands({
+      locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`
+    });
+    mpHands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.5
+    });
+    mpHands.onResults(onHandResults);
+
+    // Warm up model
+    await mpHands.initialize();
+
+    mpCam = new Camera(video, {
+      onFrame: async () => { await mpHands.send({image: video}); },
+      width: 640, height: 480
+    });
+    mpCam.start();
+
+    handActive = true;
+    document.getElementById('cam-box').classList.add('on');
+    document.getElementById('hand-legend').classList.add('on');
+    document.getElementById('st-hands').textContent = 'ON';
+    btn.classList.add('active');
+    btn.innerHTML = '<span class="wdot"></span>WOW ON';
+    btn.disabled = false;
+  } catch(err) {
+    btn.innerHTML = '<span class="wdot"></span>WOW';
+    btn.disabled = false;
+    let msg = 'Error al iniciar cámara:\n' + err.message;
+    if(err.name === 'NotAllowedError') msg = 'Permiso de cámara denegado.\nHabilita la cámara en tu navegador.';
+    if(err.name === 'NotFoundError')   msg = 'No se encontró ninguna cámara.';
+    alert(msg);
+  }
+}
+
+function stopHands() {
+  handActive = false;
+  if(mpCam) { mpCam.stop(); mpCam = null; }
+  const video = document.getElementById('cam-video');
+  if(video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); video.srcObject = null; }
+  document.getElementById('cam-box').classList.remove('on');
+  document.getElementById('hand-legend').classList.remove('on');
+  document.getElementById('st-hands').textContent = 'OFF';
+  window._handState.left  = {x:null, y:null, pinch:false, lms:null};
+  window._handState.right = {x:null, y:null, pinch:false, lms:null};
+  const btn = document.getElementById('wow-btn');
+  btn.classList.remove('active');
+  btn.innerHTML = '<span class="wdot"></span>WOW';
+  const oc = document.getElementById('hand-overlay');
+  oc.getContext('2d').clearRect(0, 0, oc.width, oc.height);
+}
+
+function onHandResults(results) {
+  const oc = document.getElementById('hand-overlay');
+  const cw = document.getElementById('canvas-wrap');
+  oc.width = cw.offsetWidth; oc.height = cw.offsetHeight;
+  const ctx = oc.getContext('2d');
+  ctx.clearRect(0, 0, oc.width, oc.height);
+
+  window._handState.left  = {x:null, y:null, pinch:false, lms:null};
+  window._handState.right = {x:null, y:null, pinch:false, lms:null};
+
+  if(!results.multiHandLandmarks || !results.multiHandLandmarks.length) return;
+
+  const CONNECTIONS = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [5,9],[9,10],[10,11],[11,12],
+    [9,13],[13,14],[14,15],[15,16],
+    [13,17],[17,18],[18,19],[19,20],[0,17]
+  ];
+
+  results.multiHandLandmarks.forEach((lms, idx) => {
+    const mpLabel = results.multiHandedness[idx].label;
+    const side = mpLabel === 'Left' ? 'right' : 'left';
+    const color  = side === 'left' ? '#22c55e' : '#3b82f6';
+    const colorA = side === 'left' ? 'rgba(34,197,94,' : 'rgba(59,130,246,';
+
+    const th = lms[4], ix = lms[8];
+    const px = 1 - ((th.x + ix.x) / 2);
+    const py = (th.y + ix.y) / 2;
+    const cx = px * oc.width, cy = py * oc.height;
+    const pinch = Math.hypot(th.x - ix.x, th.y - ix.y) < 0.065;
+
+    window._handState[side] = {x:cx, y:cy, pinch, lms};
+
+    ctx.lineWidth = 1;
+    CONNECTIONS.forEach(([a,b]) => {
+      const la = lms[a], lb = lms[b];
+      ctx.beginPath();
+      ctx.moveTo((1-la.x)*oc.width, la.y*oc.height);
+      ctx.lineTo((1-lb.x)*oc.width, lb.y*oc.height);
+      ctx.strokeStyle = colorA + '0.35)';
+      ctx.stroke();
+    });
+
+    lms.forEach(lm => {
+      ctx.beginPath();
+      ctx.arc((1-lm.x)*oc.width, lm.y*oc.height, 3, 0, Math.PI*2);
+      ctx.fillStyle = colorA + '0.65)';
+      ctx.fill();
+    });
+
+    const r = pinch ? 11 : 7;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fillStyle = pinch ? colorA+'0.9)' : colorA+'0.4)';
+    ctx.fill();
+    if(pinch) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r+5, 0, Math.PI*2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    ctx.font = '600 9px IBM Plex Mono,monospace';
+    ctx.fillStyle = color;
+    ctx.fillText(side === 'left' ? '✂ CUT' : '⊙ GRAB', cx+14, cy+4);
+  });
+}
+
+// ── FPS ───────────────────────────────────────────────────────────────────────
+let fpsArr = [], lastFps = 0;
+
+// ── P5 ────────────────────────────────────────────────────────────────────────
+new p5(function(p) {
+  window._p5sim = p;
+
+  let nodes=[], edges=[], edgeSet=new Set();
+  let gridCount=30, clothSize=500;
+  let grabbedNode=null, hGrabNode=null;
+  let img=null, defaultImg=null;
+  let bladeTrail=[];
+  let prevBladeM=null;
+  let prevBladeH=null;
+
+  p._params  = {...simParams};
+  p._tool    = 'grab';
+  p._paused  = false;
+  p._reset   = false;
+  p._dropAll = false;
+  p._repin   = false;
+
+  function ek(a,b) { return a < b ? a+'-'+b : b+'-'+a; }
+  function he(a,b) { return edgeSet.has(ek(a,b)); }
+
+  function connect(a,b) {
+    const n1=nodes[a], n2=nodes[b];
+    const dx=n2.x-n1.x, dy=n2.y-n1.y;
+    edges.push({n1, n2, rest:Math.sqrt(dx*dx+dy*dy), i1:a, i2:b});
+    edgeSet.add(ek(a,b));
+  }
+
+  function buildDefault() {
+    const g = p.createGraphics(512, 512);
+    g.noStroke();
+    for(let y=0;y<8;y++)
+      for(let x=0;x<8;x++) {
+        g.fill((x+y)%2===0 ? '#ff4d00' : '#fff');
+        g.rect(x*64, y*64, 64, 64);
+      }
+    const t = g.get();
+    g.remove();
+    return t;
+  }
+
+  function setup() {
+    gridCount = Math.round(p._params.grid) || 30;
+    nodes=[]; edges=[]; edgeSet.clear();
+    bladeTrail=[]; prevBladeM=null; prevBladeH=null;
+    grabbedNode=null; hGrabNode=null;
+    const step = clothSize / gridCount;
+    const ox = -clothSize/2, oy = -clothSize/2;
+    for(let j=0; j<=gridCount; j++)
+      for(let i=0; i<=gridCount; i++)
+        nodes.push({
+          x: ox+i*step, y: oy+j*step, z: 0,
+          ox: ox+i*step, oy: oy+j*step-30, oz: 0,
+          pinned: (j===0),
+          u: i/gridCount, v: j/gridCount
+        });
+    for(let j=0; j<=gridCount; j++)
+      for(let i=0; i<=gridCount; i++) {
+        const idx = i + j*(gridCount+1);
+        if(i < gridCount) connect(idx, idx+1);
+        if(j < gridCount) connect(idx, idx+(gridCount+1));
+      }
+    document.getElementById('hd-nodes').textContent = nodes.length;
+    document.getElementById('hd-edges').textContent = edges.length;
+  }
+
+  function slice(x1,y1,x2,y2) {
+    const rem = [];
+    edges.forEach((e,i) => {
+      const ax=e.n1.x, ay=e.n1.y, bx=e.n2.x, by=e.n2.y;
+      const d1x=x2-x1, d1y=y2-y1, d2x=bx-ax, d2y=by-ay;
+      const den = d1x*d2y - d1y*d2x;
+      if(Math.abs(den)<0.0001) return;
+      const ocx=ax-x1, ocy=ay-y1;
+      const t = (ocx*d2y - ocy*d2x)/den;
+      const u = (ocx*d1y - ocy*d1x)/den;
+      if(t>0 && t<1 && u>0 && u<1) rem.push(i);
+    });
+    for(let i=rem.length-1; i>=0; i--) {
+      const e = edges[rem[i]];
+      edgeSet.delete(ek(e.i1, e.i2));
+      edges.splice(rem[i], 1);
+    }
+  }
+
+  function toWorld(px,py) {
+    const cw = document.getElementById('canvas-wrap');
+    return { x: px - cw.offsetWidth/2, y: py - cw.offsetHeight/2 };
+  }
+
+  p.setup = function() {
+    const cw = document.getElementById('canvas-wrap');
+    const c = p.createCanvas(cw.offsetWidth, cw.offsetHeight, p.WEBGL);
+    c.parent('canvas-wrap');
+    p.perspective(p.PI/3, p.width/p.height, 0.1, 10000);
+    defaultImg = buildDefault();
+    img = defaultImg;
+    setup();
+  };
+
+  p.draw = function() {
+    if(p._reset)   { p._reset=false;   setup(); }
+    if(p._dropAll) { p._dropAll=false; nodes.forEach(n => n.pinned=false); }
+    if(p._repin)   { p._repin=false;   nodes.forEach((n,i) => { if(Math.floor(i/(gridCount+1))===0) n.pinned=true; }); }
+
+    // Apply pending texture
+    if(window._pendingTexture != null) {
+      const _t = window._pendingTexture;
+      window._pendingTexture = null;
+      if(_t === '__default__') {
+        img = defaultImg;
+      } else {
+        // _t is a p5.Graphics, convert to texture-friendly p5.Image
+        img = _t;
+      }
+    }
+
+    const par = p._params;
+    const mx = p.mouseX - p.width/2;
+    const my = p.mouseY - p.height/2;
+
+    // mouse cut
+    if(!handActive && p._tool==='cut' && p.mouseIsPressed) {
+      if(prevBladeM) { slice(prevBladeM.x, prevBladeM.y, mx, my); bladeTrail.push({x:mx,y:my,age:0,c:'m'}); }
+      prevBladeM = {x:mx, y:my};
+    } else if(!handActive) { prevBladeM=null; }
+
+    // hand input
+    if(handActive) {
+      const hs = window._handState;
+      if(hs.left.x!=null && hs.left.pinch) {
+        const w = toWorld(hs.left.x, hs.left.y);
+        if(prevBladeH) { slice(prevBladeH.x, prevBladeH.y, w.x, w.y); bladeTrail.push({x:w.x,y:w.y,age:0,c:'l'}); }
+        prevBladeH = w;
+      } else { prevBladeH=null; }
+
+      if(hs.right.x!=null) {
+        const w = toWorld(hs.right.x, hs.right.y);
+        if(hs.right.pinch) {
+          if(!hGrabNode) {
+            let best = clothSize/gridCount*3, bn=null;
+            nodes.forEach(n => {
+              if(n.pinned) return;
+              const d = Math.hypot(w.x-n.x, w.y-n.y);
+              if(d<best) { best=d; bn=n; }
+            });
+            hGrabNode = bn;
+          }
+          if(hGrabNode) { hGrabNode.x=w.x; hGrabNode.y=w.y; hGrabNode.ox=w.x; hGrabNode.oy=w.y; }
+        } else { hGrabNode=null; }
+      } else { hGrabNode=null; }
+    }
+
+    bladeTrail = bladeTrail.filter(pt => { pt.age++; return pt.age<24; });
+
+    // physics
+    if(!p._paused) {
+      if(!handActive && p._tool==='grab' && grabbedNode) {
+        grabbedNode.x=mx; grabbedNode.y=my; grabbedNode.ox=mx; grabbedNode.oy=my;
+      }
+      const wx = par.windx + (p._tool==='wind' ? p.cos(p.frameCount*0.05)*2*(p.mouseIsPressed?1:0) : 0);
+      nodes.forEach(n => {
+        if(n.pinned || n===grabbedNode || n===hGrabNode) return;
+        const vx=(n.x-n.ox)*par.damping, vy=(n.y-n.oy)*par.damping;
+        n.ox=n.x; n.oy=n.y;
+        n.x += vx + wx*0.1;
+        n.y += vy + par.gravity;
+      });
+      const sub = Math.round(par.substeps) || 3;
+      for(let s=0; s<sub; s++)
+        edges.forEach(e => {
+          const dx=e.n2.x-e.n1.x, dy=e.n2.y-e.n1.y;
+          const dist = Math.sqrt(dx*dx+dy*dy);
+          if(dist<0.001) return;
+          const diff = (e.rest-dist)/dist;
+          const m1 = !e.n1.pinned && e.n1!==grabbedNode && e.n1!==hGrabNode;
+          const m2 = !e.n2.pinned && e.n2!==grabbedNode && e.n2!==hGrabNode;
+          const sx=dx*diff*0.5, sy=dy*diff*0.5;
+          if(m1&&m2)      { e.n1.x-=sx; e.n1.y-=sy; e.n2.x+=sx; e.n2.y+=sy; }
+          else if(m1)     { e.n1.x-=dx*diff; e.n1.y-=dy*diff; }
+          else if(m2)     { e.n2.x+=dx*diff; e.n2.y+=dy*diff; }
+        });
+    }
+
+    // render
+    p.background(17);
+    p.noStroke();
+    if(img) p.texture(img); else p.fill(200);
+    p.textureMode(p.NORMAL);
+    p.beginShape(p.TRIANGLES);
+    const gw = gridCount+1;
+    for(let j=0; j<gridCount; j++)
+      for(let i=0; i<gridCount; i++) {
+        const iA=i+j*gw, iB=iA+1, iC=iA+gw, iD=iC+1;
+        const a=nodes[iA], b=nodes[iB], c=nodes[iC], d=nodes[iD];
+        if(a&&b&&c && he(iA,iB) && he(iA,iC)) { rv(a); rv(b); rv(c); }
+        if(b&&c&&d && he(iB,iD) && he(iC,iD)) { rv(b); rv(d); rv(c); }
+      }
+    p.endShape();
+
+    // blade trail
+    if(bladeTrail.length>1) {
+      p.noFill();
+      for(let i=1; i<bladeTrail.length; i++) {
+        const a=bladeTrail[i-1], b=bladeTrail[i];
+        const al = p.map(b.age,0,24,255,0);
+        const wt = p.map(b.age,0,24,2.5,0.2);
+        p.stroke(b.c==='l' ? p.color(34,197,94,al) : p.color(255,255,255,al));
+        p.strokeWeight(wt);
+        p.line(a.x,a.y,0, b.x,b.y,0);
+      }
+      p.noStroke();
+    }
+
+    // fps / status
+    const now = performance.now();
+    fpsArr.push(now);
+    fpsArr = fpsArr.filter(t => now-t<1000);
+    if(now-lastFps>200) { document.getElementById('hd-fps').textContent=fpsArr.length; lastFps=now; }
+    document.getElementById('st-mouse').textContent   = `${p.mouseX|0},${p.mouseY|0}`;
+    document.getElementById('st-grabbed').textContent = (grabbedNode||hGrabNode) ? 'NODE' : 'NONE';
+  };
+
+  function rv(n) { p.vertex(n.x, n.y, n.z, n.u, n.v); }
+
+  p.mousePressed = function() {
+    if(handActive || p._tool!=='grab') return;
+    let best = clothSize/gridCount*2, bn=null;
+    nodes.forEach(n => {
+      if(n.pinned) return;
+      const d = Math.hypot(p.mouseX-p.width/2-n.x, p.mouseY-p.height/2-n.y);
+      if(d<best) { best=d; bn=n; }
+    });
+    grabbedNode = bn;
+  };
+
+  p.mouseReleased = function() { grabbedNode=null; prevBladeM=null; };
+
+  p.windowResized = function() {
+    const cw = document.getElementById('canvas-wrap');
+    p.resizeCanvas(cw.offsetWidth, cw.offsetHeight);
+    p.perspective(p.PI/3, p.width/p.height, 0.1, 10000);
+    const oc = document.getElementById('hand-overlay');
+    oc.width = cw.offsetWidth; oc.height = cw.offsetHeight;
+  };
+
+}, document.getElementById('canvas-wrap'));
+</script>
+</body>
+</html>
